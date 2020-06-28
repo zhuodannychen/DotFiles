@@ -17,8 +17,11 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'morhetz/gruvbox'
 Plug 'junegunn/seoul256.vim'
 " Plug 'HerringtonDarkholme/yats.vim' " TS Syntax
+Plug 'Chiel92/vim-autoformat'
 
 call plug#end()
+
+au BufWrite * :Autoformat
 
 inoremap jk <ESC>
 nmap <C-n> :NERDTreeToggle<CR>
@@ -62,7 +65,6 @@ let g:coc_global_extensions = [
   \ 'coc-snippets',
   \ 'coc-tsserver',
   \ 'coc-eslint', 
-  \ 'coc-prettier', 
   \ 'coc-json', 
   \ ]
 
@@ -71,6 +73,9 @@ noremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
 noremap <silent> <expr> k (v:count == 0 ? 'gk' : 'k')
 
 nmap <leader>y ggVG"+y''
+nnoremap <leader>w <c-w>
+
+set timeout ttimeoutlen=50
 
 filetype on
 filetype indent on
@@ -78,5 +83,8 @@ set mp=g++\ -O2\ -Wall\ --std=c++17\ -Wno-unused-result\ %:r.cpp\ -o\ %:r
 nmap <F2> :vs %:r.in <CR>
 nmap <F3> :!time ./%:r < %:r.in <CR>
 autocmd filetype cpp nnoremap <F4> :w <CR> :make<CR>
-autocmd filetype cpp nnoremap <F5> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
-autocmd filetype python nnoremap <F5> :w <bar> !python3 %:r.py < %:r.in <CR>
+autocmd filetype cpp nnoremap <F1> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
+autocmd filetype python nnoremap <F1> :w <bar> !python3 %:r.py < %:r.in <CR>
+" support <F1> on insert mode
+autocmd filetype cpp imap <F1> <esc> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
+
