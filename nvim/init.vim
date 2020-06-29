@@ -17,11 +17,11 @@ Plug 'jiangmiao/auto-pairs'
 Plug 'morhetz/gruvbox'
 Plug 'junegunn/seoul256.vim'
 " Plug 'HerringtonDarkholme/yats.vim' " TS Syntax
-Plug 'Chiel92/vim-autoformat'
+" Plug 'Chiel92/vim-autoformat'
 
 call plug#end()
 
-au BufWrite * :Autoformat
+" au BufWrite * :Autoformat
 
 inoremap jk <ESC>
 nmap <C-n> :NERDTreeToggle<CR>
@@ -62,11 +62,11 @@ set background=dark
 
 " coc config
 let g:coc_global_extensions = [
-  \ 'coc-snippets',
-  \ 'coc-tsserver',
-  \ 'coc-eslint', 
-  \ 'coc-json', 
-  \ ]
+            \ 'coc-snippets',
+            \ 'coc-tsserver',
+            \ 'coc-eslint',
+            \ 'coc-json',
+            \ ]
 
 " j/k will move virtual lines (lines that wrap)
 noremap <silent> <expr> j (v:count == 0 ? 'gj' : 'j')
