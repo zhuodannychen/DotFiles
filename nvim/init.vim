@@ -19,6 +19,9 @@ Plug 'junegunn/seoul256.vim'
 " Plug 'HerringtonDarkholme/yats.vim' " TS Syntax
 " Plug 'Chiel92/vim-autoformat'
 
+" A Vim Plugin for Lively Previewing LaTeX PDF Output
+" Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
+
 call plug#end()
 
 " au BufWrite * :Autoformat
@@ -80,11 +83,16 @@ set timeout ttimeoutlen=50
 filetype on
 filetype indent on
 set mp=g++\ -O2\ -Wall\ --std=c++17\ -Wno-unused-result\ %:r.cpp\ -o\ %:r
+autocmd filetype cpp nnoremap <F1> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
+autocmd filetype python nnoremap <F1> :w <bar> !python3 %:r.py < %:r.in <CR>
 nmap <F2> :vs %:r.in <CR>
 nmap <F3> :!time ./%:r < %:r.in <CR>
 autocmd filetype cpp nnoremap <F4> :w <CR> :make<CR>
-autocmd filetype cpp nnoremap <F1> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
-autocmd filetype python nnoremap <F1> :w <bar> !python3 %:r.py < %:r.in <CR>
 " support <F1> on insert mode
-autocmd filetype cpp imap <F1> <esc> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
+" autocmd filetype cpp imap <F1> <esc> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
+
+" latex
+autocmd filetype tex nmap <buffer> <F1> :!latexmk -pdf %<CR>
+autocmd filetype tex nmap <buffer> <F2> :!open -a Skim %:r.pdf<CR><CR>
+autocmd filetype tex nmap <buffer> <F5> :!latexmk -c<CR>
 
