@@ -21,8 +21,10 @@ Plug 'junegunn/seoul256.vim'
 
 " A Vim Plugin for Lively Previewing LaTeX PDF Output
 " Plug 'xuhdev/vim-latex-live-preview', { 'for': 'tex' }
+Plug 'scrooloose/nerdcommenter'
 
 call plug#end()
+
 
 " au BufWrite * :Autoformat
 
