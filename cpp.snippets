@@ -1,0 +1,359 @@
+# A valid snippet should starts with:
+#
+#		snippet trigger_word [ "description" [ options ] ]
+#
+# and end with:
+#
+#		endsnippet
+#
+# Snippet options:
+#
+#		b - Beginning of line.
+#		i - In-word expansion.
+#		w - Word boundary.
+#		r - Regular expression
+#		e - Custom context snippet
+#		A - Snippet will be triggered automatically, when condition matches.
+#
+# Basic example:
+#
+#		snippet emitter "emitter properties" b
+#		private readonly ${1} = new Emitter<$2>()
+#		public readonly ${1/^_(.*)/$1/}: Event<$2> = this.$1.event
+#		endsnippet
+#
+# Online reference: https://github.com/SirVer/ultisnips/blob/master/doc/UltiSnips.txt
+
+snippet valid_bounds "checks grid bounds" b
+bool val_bounds(int i, int j, int n, int m) {
+	return i >= 0 && i < n && j >= 0 && j < m;
+}
+endsnippet
+
+snippet comb "calculates nCr" b
+const int MAXN = $1;
+long long fact[MAXN]; // fact[i] = i !
+long long inv[MAXN]; // inv[i] = i-1
+long long finv[MAXN]; // finv[i] = (i !)-1
+
+void buildFact(int n) {
+    fact[0] = finv[0] = inv[1] = 1;
+    for(int i = 2; i < n; i++) inv[i] = (MOD - (MOD / i) * inv[MOD%i] % MOD) % MOD;
+    for(int i = 1; i < n; i++){
+        fact[i] = fact[i-1] * i % MOD;
+        finv[i] = finv[i-1] * inv[i] % MOD;
+    }
+}
+long long C(int a,int b){if(a < b || b < 0)return 0; return fact[a] * finv[b] % MOD * finv[a-b] % MOD;}
+endsnippet
+
+snippet dsu "union set" b
+class UnionFind {
+private:
+    vector<int> p, rank, setSize;
+    int numSets;
+public:
+    UnionFind(int N) {
+    setSize.assign(N, 1);
+    numSets = N; rank.assign(N, 0);
+    p.assign(N, 0);
+    for (int i = 0; i < N; i++)
+        p[i] = i;
+    }
+    int findSet(int i) {
+        return (p[i] == i) ? i : (p[i] = findSet(p[i]));
+    }
+    bool isSameSet(int i, int j) { return findSet(i) == findSet(j); }
+    void unionSet(int i, int j) { 
+        if (!isSameSet(i, j)) {
+            numSets--; 
+            int x = findSet(i), y = findSet(j);
+            if (rank[x] > rank[y]) {
+                p[y] = x;
+                setSize[x] += setSize[y];
+            }
+            else {
+                p[x] = y;
+                setSize[y] += setSize[x];
+                if (rank[x] == rank[y])
+                    rank[y]++;
+            }
+        }
+    }
+    int numDisjointSets() { return numSets; }
+    int sizeOfSet(int i) { return setSize[findSet(i)]; }
+};
+endsnippet
+
+snippet sieve "prime numbers" b
+vi primes;
+
+void sieve(int N) {
+    bool sieve[N];
+    memset(sieve, true, sizeof(sieve));
+    sieve[0] = false;
+    sieve[1] = false;
+    for (int i = 2; i <= N; i++) {
+        if (sieve[i]) {
+            primes.push_back(i);
+            for (int j = i*i; j <= N; j+=i)
+                sieve[j] = false;
+        }
+    }
+}
+endsnippet
+
+snippet primeFactors "find prime factors" b
+vi primeFactors(ll N) {
+    vi factors;
+    ll PF_idx = 0, PF = primes[PF_idx];
+    while (N != 1 && (PF * PF <= N)) {
+        while (N % PF == 0) { N /= PF; factors.push_back(PF); }
+        PF = primes[++PF_idx];
+    }
+    if (N != 1) factors.push_back(N);
+    return factors;
+}
+endsnippet
+
+snippet segtree_lazy "segment tree with lazy propagation" b
+#define MAXSEG 262144
+
+int N, Q;
+int st[MAXSEG];
+int lazy[MAXSEG];
+
+void push(int lo, int hi, int node) {
+	if (lazy[node] == 0) return;
+	st[node] += (hi - lo + 1) * lazy[node];
+	if (lo != hi) {
+		lazy[2 * node + 1] += lazy[node];
+		lazy[2 * node + 2] += lazy[node];
+	}
+	lazy[node] = 0;
+}
+
+void update_range(int s, int e, int x, int lo=0, int hi=-1, int node=0) {
+	if (hi == -1) hi = N - 1;
+	push(lo, hi, node);
+	if (hi < s || lo > e) return;
+	if (lo >= s && hi <= e) {
+		lazy[node] = x;
+		push(lo, hi, node);
+		return;
+	}
+	int mid = (lo + hi) / 2;
+	update_range(s, e, x, lo, mid, 2 * node + 1);
+	update_range(s, e, x, mid + 1, hi, 2 * node + 2);
+	st[node] = st[2 * node + 1] + st[2 * node + 2];
+}
+
+int query(int s, int e, int lo=0, int hi=-1, int node=0) {
+	if (hi == -1) hi = N - 1;
+	push(lo, hi, node);
+	if (hi < s || lo > e) return 0;
+	if (lo >= s && hi <= e) return st[node];
+	int mid = (lo + hi) / 2;
+	return query(s, e, lo, mid, 2 * node + 1) + 
+			query(s, e, mid + 1, hi, 2 * node + 2);
+}
+endsnippet
+
+snippet trie_vectors "Trie implementation using 2d vectors" b
+const int MaxNodes = 2000005;
+const int alphabet = 26;
+
+struct Trie {
+    int sz;
+    vector<vector<int>> trie;
+    vector<int> cnt;
+    Trie() {
+        trie.resize(MaxNodes, vector <int> (alphabet));
+        cnt.resize(MaxNodes);
+        sz = 0;
+    }
+
+    void insert(string str) {
+        int u = 0;
+        for (char c : str) {
+            if (!trie[u][c-'A'])
+                trie[u][c-'A'] = ++sz;
+            u = trie[u][c-'A'];
+        }
+        ++cnt[u];
+    }
+
+    bool search (string str) {
+        int u = 0;
+        for (char c : str) {
+            if (!trie[u][c-'A'])
+                return false;
+            u = trie[u][c-'A'];
+        }
+        return cnt[u] > 0;
+    }
+
+    bool prefix (string str) {
+        int u = 0;
+        for (char c : str) {
+            if (!trie[u][c-'A'])
+                return false;
+            u = trie[u][c-'A'];
+        }
+        return true;
+    }
+};
+endsnippet
+
+snippet trie_pointers "Trie implementation using pointers" b
+const int alphabet = 26;
+
+class TrieNode {
+    public:
+    // Indicates end of string
+    bool last;
+    TrieNode* children[alphabet];
+    TrieNode() {
+        this->last = false;
+        for (int i = 0; i < alphabet; ++i)
+            this->children[i] = NULL;
+    }
+    ~TrieNode() {
+        for (auto& node : children)
+            if (node) delete node;
+    }
+};
+
+class Trie {
+    public:
+    TrieNode* root;
+    Trie() {
+        this->root = new TrieNode();
+    }
+    ~Trie() {
+        delete root;
+    }
+
+    void insert(string text) {
+        int length = text.length();
+        int index = 0;
+        TrieNode* head = this->root;
+        for (int level = 0; level < length; ++level) {
+            index = text[level] - '0';
+            if (head->children[index] == NULL)
+                head->children[index] = new TrieNode();
+            head = head->children[index];
+        }
+        if (head != NULL)
+            head->last = true;
+    }
+
+    bool search(string word) {
+        TrieNode* head = this->root;
+        int index = 0;
+        for (char ch : word) {
+            index = ch - '0';
+            if (!head->children[index]) { return false; }
+            head = head->children[index];
+        }
+        return head->last;
+    }
+
+    int words(TrieNode* head) {
+        int counter = 0;
+        if (head != NULL) {
+            if (head->last == true)
+                counter++;
+            for (int i = 0; i < alphabet; i++) {
+                if (head->children[i] != NULL)
+                    counter += this->words(head->children[i]);
+            }
+        }
+        return counter;
+    }
+
+    int startsWith(string prefix) {
+        TrieNode* head = this->root;
+        if (head != NULL) {
+            int n = prefix.length();
+            int level = 0;
+            int index = 0;
+            while (level < n) {
+                index = prefix[level] - '0';
+                if (head->children[index] != NULL)
+                    head = head->children[index];
+                else
+                    return 0;
+                level++;
+            }
+            if (level == n) {
+                if (head == NULL)
+                    return 1;
+                else
+                    return this->words(head);
+            }
+        }
+        return 0;
+    }
+};
+endsnippet
+
+snippet fenwick_tree "Fenwick Tree Implementation" b
+struct FenwickTree {
+    vector<int> bit;  // binary indexed tree
+    int n;
+
+    FenwickTree(int n) {
+        this->n = n;
+        bit.assign(n, 0);
+    }
+
+    FenwickTree(vector<int> a) : FenwickTree(a.size()) {
+        for (size_t i = 0; i < a.size(); i++)
+            add(i, a[i]);
+    }
+
+    int sum(int r) {
+        int ret = 0;
+        for (; r >= 0; r = (r & (r + 1)) - 1)
+            ret += bit[r];
+        return ret;
+    }
+
+    int sum(int l, int r) {
+        return sum(r) - sum(l - 1);
+    }
+
+    void add(int idx, int delta) {
+        for (; idx < n; idx = idx | (idx + 1))
+            bit[idx] += delta;
+    }
+};
+endsnippet
+
+snippet seg_tree "Segment Tree Implementation, Sum" b
+#define MAXSEG 50005
+
+int N;
+int st[4*MAXSEG];
+
+void update(int i, int x, int lo=0, int hi=-1, int node=0) {
+	if (hi == -1) hi = N - 1;
+	if (hi < i || lo > i) return;
+	if (lo == hi) { st[node] += x; return; }
+	int mid = (lo + hi) / 2;
+	update(i, x, lo, mid, 2 * node + 1);
+	update(i, x, mid + 1, hi, 2 * node + 2);
+	st[node] = st[2 * node + 1] + st[2 * node + 2];
+}
+
+int query(int s, int e, int lo=0, int hi=-1, int node=0) {
+	if (hi == -1) hi = N - 1;
+	if (hi < s || lo > e) return 0;
+	if (lo >= s && hi <= e) return st[node];
+	int mid = (lo + hi) / 2;
+	return query(s, e, lo, mid, 2 * node + 1) + 
+			query(s, e, mid + 1, hi, 2 * node + 2);
+}
+endsnippet
+
