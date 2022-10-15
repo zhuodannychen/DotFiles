@@ -85,16 +85,18 @@ set timeout ttimeoutlen=50
 filetype on
 filetype indent on
 set mp=g++\ -O2\ -Wall\ --std=c++17\ -Wno-unused-result\ %:r.cpp\ -o\ %:r
-autocmd filetype cpp nnoremap <F1> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
-autocmd filetype python nnoremap <F1> :w <bar> !python3 %:r.py < %:r.in <CR>
+autocmd filetype cpp nnoremap <F1> :w <bar> :make <bar> :!time ./%:r < %:r.in > %:r.out <CR>
+autocmd filetype python nnoremap <F1> :w <bar> !python3 %:r.py < %:r.in > %:r.out <CR>
 nmap <F2> :vs %:r.in <CR>
-nmap <F3> :!time ./%:r < %:r.in <CR>
-autocmd filetype cpp nnoremap <F4> :w <CR> :make<CR>
+nmap <F3> :sp %:r.out <CR>
+autocmd filetype cpp nnoremap <F4> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
+autocmd filetype python nnoremap <F4> :w <bar> !python3 %:r.py < %:r.in <CR>
+autocmd filetype cpp nnoremap <F5> :w <CR> :make<CR>
 " support <F1> on insert mode
 " autocmd filetype cpp imap <F1> <esc> :w <bar> :make <bar> :!time ./%:r < %:r.in <CR>
 
 " latex
 autocmd filetype tex nmap <buffer> <F1> :!latexmk -pdf %<CR>
 autocmd filetype tex nmap <buffer> <F2> :!open -a Skim %:r.pdf<CR><CR>
-autocmd filetype tex nmap <buffer> <F5> :!latexmk -c<CR>
+autocmd filetype tex nmap <buffer> <F6> :!latexmk -c<CR>
 
