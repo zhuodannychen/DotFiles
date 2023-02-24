@@ -87,16 +87,16 @@ endsnippet
 
 snippet sieve "prime numbers" b
 vi primes;
+bool sieve[N];
 
-void sieve(int N) {
-    bool sieve[N];
+void sievef(int N) {
     memset(sieve, true, sizeof(sieve));
     sieve[0] = false;
     sieve[1] = false;
-    for (int i = 2; i <= N; i++) {
+    for (ll i = 2; i <= N; i++) {
         if (sieve[i]) {
             primes.push_back(i);
-            for (int j = i*i; j <= N; j+=i)
+            for (ll j = i*i; j <= N; j+=i)
                 sieve[j] = false;
         }
     }
@@ -206,6 +206,7 @@ struct Trie {
 endsnippet
 
 snippet trie_pointers "Trie implementation using pointers" b
+// make sure to change lines where it uses - '0'
 const int alphabet = 26;
 
 class TrieNode {
@@ -331,29 +332,211 @@ struct FenwickTree {
 };
 endsnippet
 
-snippet seg_tree "Segment Tree Implementation, Sum" b
-#define MAXSEG 50005
+snippet seg_tree "Segment Tree Implementation, lcm" b
+#define MAXSEG 100005
 
-int N;
-int st[4*MAXSEG];
+int N, Q;
+ll st[4*MAXSEG];
+vector<int> arr;
 
-void update(int i, int x, int lo=0, int hi=-1, int node=0) {
-	if (hi == -1) hi = N - 1;
-	if (hi < i || lo > i) return;
-	if (lo == hi) { st[node] += x; return; }
-	int mid = (lo + hi) / 2;
-	update(i, x, lo, mid, 2 * node + 1);
-	update(i, x, mid + 1, hi, 2 * node + 2);
-	st[node] = st[2 * node + 1] + st[2 * node + 2];
+void build(int node=0, int lo=0, int hi=-1) {
+    if (hi == -1) hi = N - 1;
+    // update arr
+    if (lo == hi) { st[node] = arr[lo]; return; }
+    int mid = (lo + hi) / 2;
+    build(2*node+1, lo, mid);
+    build(2*node+2, mid+1, hi);
+    int left_tree = st[2*node+1];
+    int right_tree = st[2*node+2];
+    st[node] = lcm(left_tree, right_tree);
 }
 
-int query(int s, int e, int lo=0, int hi=-1, int node=0) {
-	if (hi == -1) hi = N - 1;
-	if (hi < s || lo > e) return 0;
-	if (lo >= s && hi <= e) return st[node];
-	int mid = (lo + hi) / 2;
-	return query(s, e, lo, mid, 2 * node + 1) + 
-			query(s, e, mid + 1, hi, 2 * node + 2);
+void update(int i, ll x, int lo=0, int hi=-1, int node=0) {
+    if (hi == -1) hi = N - 1;
+    if (hi < i || lo > i) return;
+    if (lo == hi) { st[node] = x; return; }
+    int mid = (lo + hi) / 2;
+    update(i, x, lo, mid, 2 * node + 1);
+    update(i, x, mid + 1, hi, 2 * node + 2);
+    int left_tree = st[2*node+1];
+    int right_tree = st[2*node+2];
+    st[node] = lcm(left_tree, right_tree);
+}
+
+ll query(int s, int e, int lo=0, int hi=-1, int node=0) {
+    if (hi == -1) hi = N - 1;
+    if (hi < s || lo > e) return 1;
+    if (lo >= s && hi <= e) return st[node];
+    int mid = (lo + hi) / 2;
+    int left_tree = query(s, e, lo, mid, 2 * node + 1);
+    int right_tree = query(s, e, mid + 1, hi, 2 * node + 2);
+    return lcm(left_tree, right_tree);
 }
 endsnippet
 
+snippet dijkstra "Dijkstra" b
+priority_queue<pair<double, int>> pq;
+vector<vector<pair<double, int>>> adj;
+vector<double> d;
+vi p;
+
+void dijkstra(int s, vector<double> & d, vector<int> & p) {
+    int n = adj.size();
+    d.assign(n, inf);
+    p.assign(n, -1);
+    vector<bool> u(n, false);
+    priority_queue<pair<double, int>> pq;
+
+    d[s] = 0;
+    pq.push({0, 0});
+    while (!pq.empty()) {
+        pair<double, int> cur = pq.top();
+        int v = cur.second;
+        pq.pop();
+        u[v] = true;
+
+        for (auto edge : adj[v]) {
+            double len = edge.first;
+            int to = edge.second;
+
+            if (d[v] + len < d[to]) {
+                d[to] = d[v] + len;
+                p[to] = v;
+                pq.push({d[to], to});
+            }
+        }
+    }
+}
+endsnippet
+
+snippet struct_cmp "struct custom compare" b
+bool operator<(const quest& o) const {
+}
+endsnippet
+
+snippet custom_cmp "custom compare" b
+int cmp(tri a, tri b) {
+}
+endsnippet
+
+snippet max_flow "Max Flow" b
+template<int V, class T=long long>
+class max_flow {
+	static const T INF = numeric_limits<T>::max();
+
+	struct edge {
+		int t, rev;
+		T cap, f;
+	};
+
+	vector<edge> adj[V];
+	int dist[V];
+	int ptr[V];
+
+	bool bfs(int s, int t) {
+		memset(dist, -1, sizeof dist);
+		dist[s] = 0;
+		queue<int> q({ s });
+		while (!q.empty() && dist[t] == -1) {
+			int n = q.front();
+			q.pop();
+			for (auto& e : adj[n]) {
+				if (dist[e.t] == -1 && e.cap != e.f) {
+					dist[e.t] = dist[n] + 1;
+					q.push(e.t);
+				}
+			}
+		}
+		return dist[t] != -1;
+	}
+
+	T augment(int n, T amt, int t) {
+		if (n == t) return amt;
+		for (; ptr[n] < adj[n].size(); ptr[n]++) {
+			edge& e = adj[n][ptr[n]];
+			if (dist[e.t] == dist[n] + 1 && e.cap != e.f) {
+				T flow = augment(e.t, min(amt, e.cap - e.f), t);
+				if (flow != 0) {
+					e.f += flow;
+					adj[e.t][e.rev].f -= flow;
+					return flow;
+				}
+			}
+		}
+		return 0;
+	}
+
+public:
+	void add(int u, int v, T cap=1, T rcap=0) {
+		adj[u].push_back({ v, (int) adj[v].size(), cap, 0 });
+		adj[v].push_back({ u, (int) adj[u].size() - 1, rcap, 0 });
+	}
+
+	T calc(int s, int t) {
+		T flow = 0;
+		while (bfs(s, t)) {
+			memset(ptr, 0, sizeof ptr);
+			while (T df = augment(s, INF, t))
+				flow += df;
+		}
+		return flow;
+	}
+
+	void clear() {
+		for (int n = 0; n < V; n++)
+			adj[n].clear();
+	}
+};
+endsnippet
+
+snippet suffix_array "Suffix Array with LCP" b
+vector<int> suffix_array(string S) {
+	int N = S.size();
+	vector<int> sa(N), classes(N);
+	for (int i = 0; i < N; i++) {
+		sa[i] = N - 1 - i;
+		classes[i] = S[i];
+	}
+	stable_sort(sa.begin(), sa.end(), [&S](int i, int j) {
+		return S[i] < S[j];
+	});
+	for (int len = 1; len < N; len *= 2) {
+		vector<int> c(classes);
+		for (int i = 0; i < N; i++) {
+			bool same = i && sa[i - 1] + len < N
+			              && c[sa[i]] == c[sa[i - 1]]
+			              && c[sa[i] + len / 2] == c[sa[i - 1] + len / 2];
+			classes[sa[i]] = same ? classes[sa[i - 1]] : i;
+		}
+		vector<int> cnt(N), s(sa);
+		for (int i = 0; i < N; i++)
+			cnt[i] = i;
+		for (int i = 0; i < N; i++) {
+			int s1 = s[i] - len;
+			if (s1 >= 0)
+				sa[cnt[classes[s1]]++] = s1;
+		}
+	}
+	return sa;
+}
+
+vector<int> lcp_array(const vector<int>& sa, string S) {
+	int N = S.size();
+	vector<int> rank(N), lcp(N - 1);
+	for (int i = 0; i < N; i++)
+		rank[sa[i]] = i;
+
+	int pre = 0;
+	for (int i = 0; i < N; i++) {
+		if (rank[i] < N - 1) {
+			int j = sa[rank[i] + 1];
+			while (max(i, j) + pre < S.size() && S[i + pre] == S[j + pre])
+				++pre;
+			lcp[rank[i]] = pre;
+			if (pre > 0)
+				--pre;
+		}
+	}
+	return lcp;
+}
+endsnippet
